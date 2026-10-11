@@ -25,7 +25,11 @@ export async function renderDashboardPage(container) {
           </p>
         </div>
 
-        <div style="display:flex; gap:0.75rem;">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <a href="tutorial.html" target="_blank" class="btn btn-ghost" style="border: 1px solid var(--slate-200); text-decoration: none;" title="Acessar o Guia e Tutorial da Escola">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>Tutorial da Escola</span>
+          </a>
           <button id="dash-btn-loan" class="btn btn-primary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/><path d="M6 2v20"/><polyline points="10 10 14 10 14 14"/></svg>
             <span>Novo Empréstimo</span>
@@ -36,6 +40,27 @@ export async function renderDashboardPage(container) {
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- Quick Onboarding / Tutorial Banner -->
+    <div style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); border: 1px solid #c7d2fe; border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary-600); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);">
+          📖
+        </div>
+        <div>
+          <div style="font-weight: 800; color: var(--slate-900); font-size: 1.02rem;">
+            Novo por aqui? Veja o Tutorial Completo de Implantação
+          </div>
+          <div style="font-size: 0.86rem; color: var(--slate-600); margin-top: 0.15rem;">
+            Aprenda a configurar regras, cadastrar acervo, importar alunos do SED e operar empréstimos e devoluções.
+          </div>
+        </div>
+      </div>
+      <a href="tutorial.html" target="_blank" class="btn btn-sm btn-primary" style="text-decoration: none; flex-shrink: 0;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Abrir Tutorial Passo a Passo</span>
+      </a>
     </div>
 
     <!-- Counters Grid -->

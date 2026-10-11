@@ -52,6 +52,20 @@ export function renderLoginPage(container) {
               <span>Entrar no sistema</span>
             </button>
           </form>
+
+          <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--slate-200); text-align: center;">
+            <p style="font-size: 0.82rem; color: var(--slate-500); margin-bottom: 0.6rem;">
+              Primeira vez na gestão da biblioteca?
+            </p>
+            <a href="tutorial.html" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;" title="Acessar o passo a passo de configuração e uso da escola">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>Tutorial & Guia de Implantação</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

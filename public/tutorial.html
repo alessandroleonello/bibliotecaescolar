@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial & Guia de Implantação — BiblioEscolar</title>
+  <meta name="description" content="Guia completo e ilustrado de implantação da biblioteca escolar: configure sua escola, cadastre acervo, gere etiquetas de código de barras e controle empréstimos." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+
+  <!-- JsBarcode para o simulador interativo de etiquetas -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    /* Estilos dedicados ao Tutorial */
+    :root {
+      --tutorial-max-w: 1200px;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: var(--slate-800);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+      scroll-behavior: smooth;
+    }
+
+    /* Top Sticky Header */
+    .tut-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--slate-200);
+      padding: 0.85rem 1.5rem;
+    }
+
+    .tut-header-inner {
+      max-width: var(--tutorial-max-w);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .tut-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .tut-brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .tut-brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      line-height: 1.2;
+    }
+
+    .tut-brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--primary-600);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tut-header-search {
+      flex: 1;
+      max-width: 380px;
+      position: relative;
+    }
+
+    .tut-header-search input {
+      width: 100%;
+      padding: 0.5rem 1rem 0.5rem 2.4rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--slate-300);
+      font-size: 0.88rem;
+      background: var(--slate-50);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .tut-header-search input:focus {
+      background: #fff;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .tut-header-search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--slate-400);
+      pointer-events: none;
+    }
+
+    .tut-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Hero Banner */
+    .tut-hero {
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+      color: #ffffff;
+      padding: 4.5rem 1.5rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tut-hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+
+    .tut-hero-inner {
+      max-width: var(--tutorial-max-w);
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tut-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      font-weight: 600;
+      backdrop-filter: blur(8px);
+      margin-bottom: 1.25rem;
+    }
+
+    .tut-hero-title {
+      font-size: clamp(2rem, 4vw, 2.85rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+      max-width: 820px;
+    }
+
+    .tut-hero-desc {
+      font-size: 1.15rem;
+      color: #c7d2fe;
+      max-width: 720px;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .tut-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-top: 2.5rem;
+    }
+
+    .tut-stat-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease;
+    }
+
+    .tut-stat-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .tut-stat-number {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tut-stat-text {
+      font-size: 0.85rem;
+      color: #e0e7ff;
+      margin-top: 0.25rem;
+    }
+
+    /* Container */
+    .tut-container {
+      max-width: var(--tutorial-max-w);
+      margin: -2.5rem auto 4rem;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Checklist Card */
+    .tut-checklist-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--slate-200);
+      margin-bottom: 3rem;
+    }
+
+    .checklist-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .checklist-progress-box {
+      min-width: 260px;
+    }
+
+    .checklist-progress-bar {
+      height: 10px;
+      background: var(--slate-100);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-top: 0.5rem;
+      position: relative;
+    }
+
+    .checklist-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #059669);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding: 0.9rem 1rem;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .checklist-item:hover {
+      background: #ffffff;
+      border-color: var(--primary-300);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .checklist-item.done {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+    }
+
+    .checklist-item.done .checklist-label {
+      text-decoration: line-through;
+      color: var(--slate-500);
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: #10b981;
+      cursor: pointer;
+    }
+
+    /* Layout: Quick Navigation + Content */
+    .tut-main-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .tut-main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Sticky Navigation Menu */
+    .tut-sidebar-menu {
+      position: sticky;
+      top: 5rem;
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    .tut-menu-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate-400);
+      margin-bottom: 0.75rem;
+    }
+
+    .tut-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-md);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--slate-600);
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-bottom: 0.25rem;
+    }
+
+    .tut-nav-link:hover, .tut-nav-link.active {
+      color: var(--primary-700);
+      background: var(--primary-50);
+    }
+
+    .tut-nav-link .step-badge {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--slate-200);
+      color: var(--slate-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .tut-nav-link:hover .step-badge, .tut-nav-link.active .step-badge {
+      background: var(--primary-600);
+      color: #ffffff;
+    }
+
+    /* Section Cards */
+    .tut-section {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--slate-200);
+      padding: 2.25rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.04);
+      scroll-margin-top: 5.5rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .tut-section:hover {
+      border-color: var(--slate-300);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--slate-100);
+    }
+
+    .section-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 8px 16px -4px rgba(0,0,0,0.08);
+    }
+
+    .section-icon-box.indigo { background: linear-gradient(135deg, #4f46e5, #3730a3); color: #fff; }
+    .section-icon-box.emerald { background: linear-gradient(135deg, #10b981, #047857); color: #fff; }
+    .section-icon-box.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+    .section-icon-box.amber { background: linear-gradient(135deg, #f59e0b, #b45309); color: #fff; }
+    .section-icon-box.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; }
+    .section-icon-box.rose { background: linear-gradient(135deg, #f43f5e, #be123c); color: #fff; }
+    .section-icon-box.teal { background: linear-gradient(135deg, #14b8a6, #0f766e); color: #fff; }
+
+    .section-badge-step {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary-600);
+      margin-bottom: 0.25rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--slate-900);
+      letter-spacing: -0.02em;
+    }
+
+    .section-lead {
+      color: var(--slate-600);
+      font-size: 1rem;
+      margin-top: 0.35rem;
+    }
+
+    /* Step Blocks */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 1.75rem 0;
+    }
+
+    .step-block {
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-600);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .step-body h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      margin-bottom: 0.35rem;
+    }
+
+    .step-body p {
+      font-size: 0.92rem;
+      color: var(--slate-600);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Mockup Visual Boxes */
+    .mockup-window {
+      background: #ffffff;
+      border: 1px solid var(--slate-300);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      margin: 1rem 0;
+      overflow: hidden;
+    }
+
+    .mockup-bar {
+      background: var(--slate-100);
+      padding: 0.5rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      border-bottom: 1px solid var(--slate-200);
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mockup-dot.red { background: #ef4444; }
+    .mockup-dot.yellow { background: #f59e0b; }
+    .mockup-dot.green { background: #10b981; }
+
+    .mockup-title {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+
+    .mockup-content {
+      padding: 1.25rem;
+      font-size: 0.9rem;
+      background: #fafafa;
+    }
+
+    /* Visual Callout Boxes */
+    .callout {
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      margin: 1.5rem 0;
+      font-size: 0.92rem;
+    }
+
+    .callout.tip {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    .callout.warning {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #92400e;
+    }
+
+    .callout.info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+
+    .callout-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    /* Interactive Label Generator Simulator */
+    .simulator-box {
+      background: linear-gradient(135deg, #f8fafc, #edf2f7);
+      border: 2px dashed var(--primary-300);
+      border-radius: var(--radius-xl);
+      padding: 1.75rem;
+      margin: 2rem 0;
+    }
+
+    .simulator-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .label-preview-card {
+      background: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 6px;
+      padding: 0.85rem 1.25rem;
+      width: 270px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      text-align: center;
+      margin: 1rem auto;
+    }
+
+    .label-preview-school {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #000;
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .label-preview-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.2rem;
+    }
+
+    /* FAQ Accordion */
+    .faq-item {
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      background: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .faq-question {
+      width: 100%;
+      text-align: left;
+      padding: 1.15rem 1.25rem;
+      background: #ffffff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--slate-800);
+      cursor: pointer;
+    }
+
+    .faq-question:hover {
+      background: var(--slate-50);
+      color: var(--primary-700);
+    }
+
+    .faq-icon {
+      transition: transform 0.2s ease;
+      color: var(--slate-400);
+    }
+
+    .faq-item.active .faq-icon {
+      transform: rotate(180deg);
+      color: var(--primary-600);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 1.25rem 1.25rem;
+      font-size: 0.95rem;
+      color: var(--slate-600);
+      border-top: 1px solid var(--slate-100);
+    }
+
+    .faq-item.active .faq-answer {
+      display: block;
+    }
+
+    /* Footer */
+    .tut-footer {
+      background: var(--slate-900);
+      color: var(--slate-300);
+      padding: 4rem 1.5rem 2.5rem;
+      margin-top: 5rem;
+    }
+
+    .tut-footer-inner {
+      max-width: var(--tutorial-max-w);
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--slate-800);
+    }
+
+    /* Print View */
+    @media print {
+      .tut-header, .tut-sidebar-menu, .tut-header-actions, .tut-header-search, .btn {
+        display: none !important;
+      }
+      .tut-main-layout {
+        display: block !important;
+      }
+      .tut-section {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="tut-header">
+    <div class="tut-header-inner">
+      <a href="index.html" class="tut-brand" title="Ir para a página inicial">
+        <div class="tut-brand-badge">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/>
+            <path d="M6 2v20"/>
+            <path d="M10 7h6"/>
+            <path d="M10 11h6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="tut-brand-title">BiblioEscolar</div>
+          <div class="tut-brand-subtitle">Manual & Tutorial de Implantação</div>
+        </div>
+      </a>
+
+      <!-- Quick Search Bar -->
+      <div class="tut-header-search">
+        <span class="tut-header-search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input type="text" id="tutorial-search" placeholder="Buscar no guia (ex: tombo, SED, devolver)..." aria-label="Buscar dúvida no tutorial" />
+      </div>
+
+      <div class="tut-header-actions">
+        <a href="catalogo.html" target="_blank" class="btn btn-sm btn-ghost" title="Ver Catálogo do Aluno">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span class="hide-mobile">Catálogo Público</span>
+        </a>
+        <a href="index.html" class="btn btn-sm btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Entrar no Sistema</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="tut-hero">
+    <div class="tut-hero-inner">
+      <div class="tut-pill">
+        <span>📖 Guia Prático Oficial</span>
+        <span>•</span>
+        <span>Para Gestores & Bibliotecários</span>
+      </div>
+      <h1 class="tut-hero-title">Como Configurar e Operar a Biblioteca Escolar</h1>
+      <p class="tut-hero-desc">
+        Aprenda todos os passos para organizar o acervo da sua escola, cadastrar alunos, imprimir etiquetas com código de barras e realizar empréstimos e devoluções em segundos.
+      </p>
+
+      <div class="tut-stats-bar">
+        <div class="tut-stat-card">
+          <div class="tut-stat-number">
+            <span>⏱️ 20 min</span>
+          </div>
+          <div class="tut-stat-text">Configuração inicial completa da escola</div>
+        </div>
+        <div class="tut-stat-card">
+          <div class="tut-stat-number">
+            <span>⚡ 1 Bipe</span>
+          </div>
+          <div class="tut-stat-text">Devolução rápida no balcão por código de barras</div>
+        </div>
+        <div class="tut-stat-card">
+          <div class="tut-stat-number">
+            <span>📱 100% Web</span>
+          </div>
+          <div class="tut-stat-text">Funciona em qualquer computador, tablet ou celular</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="tut-container">
+
+    <!-- Interactive Checklist de Implantação da Escola -->
+    <section class="tut-checklist-card">
+      <div class="checklist-header">
+        <div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--slate-900); display: flex; align-items: center; gap: 0.6rem;">
+            <span>🎯</span> Checklist de Implantação da Sua Escola
+          </h2>
+          <p style="color: var(--slate-600); font-size: 0.92rem; margin-top: 0.25rem;">
+            Acompanhe o progresso da sua equipe. Suas marcações ficam salvas automaticamente no seu navegador!
+          </p>
+        </div>
+
+        <div class="checklist-progress-box">
+          <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700;">
+            <span style="color: var(--slate-600);">Progresso da Implantação</span>
+            <span id="checklist-pct" style="color: var(--primary-600);">0%</span>
+          </div>
+          <div class="checklist-progress-bar">
+            <div class="checklist-progress-fill" id="checklist-bar"></div>
+          </div>
+          <div style="text-align: right; margin-top: 0.35rem;">
+            <button id="btn-reset-checklist" class="btn-ghost" style="padding: 0; font-size: 0.75rem; color: var(--slate-400);">Resetar progresso</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="checklist-grid" id="checklist-items-container">
+        <label class="checklist-item" data-id="step-1">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">1. Definir Regras da Escola</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Prazo de devolução (14 dias), limite de livros e bloqueios.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-2">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">2. Convidar Funcionários</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Cadastrar a equipe que operará o balcão da biblioteca.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-3">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">3. Importar Alunos (SED)</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Subir planilha Excel do SED ou cadastrar turmas manualmente.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-4">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">4. Cadastrar Acervo de Livros</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Buscar por ISBN ou digitar títulos, autores e categorias.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-5">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">5. Gerar Tombos & Etiquetas</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Imprimir etiquetas com código de barras e colar nos livros.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-6">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">6. Testar Empréstimo & Devolução</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Simular a entrega de um livro para aluno e a baixa rápida.</div>
+          </div>
+        </label>
+
+        <label class="checklist-item" data-id="step-7">
+          <input type="checkbox" class="checklist-checkbox" />
+          <div class="checklist-content">
+            <div class="checklist-label" style="font-weight: 700; font-size: 0.92rem;">7. Divulgar o Catálogo Público</div>
+            <div style="font-size: 0.8rem; color: var(--slate-500);">Imprimir o cartaz com QR Code para os alunos consultarem.</div>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- Two-Column Layout: Navigation + Detailed Modules -->
+    <div class="tut-main-layout">
+      
+      <!-- Sticky Navigation Menu -->
+      <aside class="tut-sidebar-menu">
+        <div class="tut-menu-title">Trilha de Configuração</div>
+        <nav>
+          <a href="#modulo-configuracoes" class="tut-nav-link active">
+            <span class="step-badge">1</span>
+            <span>Configurações & Regras</span>
+          </a>
+          <a href="#modulo-equipe" class="tut-nav-link">
+            <span class="step-badge">2</span>
+            <span>Equipe & Funcionários</span>
+          </a>
+          <a href="#modulo-alunos" class="tut-nav-link">
+            <span class="step-badge">3</span>
+            <span>Alunos & Importação SED</span>
+          </a>
+          <a href="#modulo-livros" class="tut-nav-link">
+            <span class="step-badge">4</span>
+            <span>Acervo & Cadastro de Livros</span>
+          </a>
+          <a href="#modulo-copias" class="tut-nav-link">
+            <span class="step-badge">5</span>
+            <span>Cópias, Tombos & Etiquetas</span>
+          </a>
+          <a href="#modulo-emprestimos" class="tut-nav-link">
+            <span class="step-badge">6</span>
+            <span>Empréstimo no Balcão</span>
+          </a>
+          <a href="#modulo-devolucoes" class="tut-nav-link">
+            <span class="step-badge">7</span>
+            <span>Devolução & Renovação</span>
+          </a>
+          <a href="#modulo-catalogo" class="tut-nav-link">
+            <span class="step-badge">8</span>
+            <span>Catálogo Público & QR Code</span>
+          </a>
+          <a href="#modulo-relatorios" class="tut-nav-link">
+            <span class="step-badge">9</span>
+            <span>Relatórios & Cobrança</span>
+          </a>
+          <a href="#modulo-faq" class="tut-nav-link">
+            <span class="step-badge">❓</span>
+            <span>Dúvidas Frequentes (FAQ)</span>
+          </a>
+        </nav>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--slate-100);">
+          <button onclick="window.print()" class="btn btn-sm btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            <span>Imprimir Guia em PDF</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Content Area with Modules -->
+      <div class="tut-content-area">
+
+        <!-- ==========================================
+             MÓDULO 1: CONFIGURAÇÕES GERAIS DA ESCOLA
+             ========================================== -->
+        <article class="tut-section" id="modulo-configuracoes">
+          <div class="section-header">
+            <div class="section-icon-box indigo">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 1 de 9</div>
+              <h2 class="section-title">Configurações Iniciais da Escola</h2>
+              <p class="section-lead">Defina as políticas da sua biblioteca antes de começar a circular livros.</p>
+            </div>
+          </div>
+
+          <p>
+            No menu <strong>Configurações</strong>, você personaliza os prazos e tolerâncias de acordo com o regulamento interno da sua unidade escolar. O sistema já vem com valores padrão recomendados, mas você pode ajustá-los a qualquer momento:
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Prazo Padrão de Devolução (em dias)</h4>
+                <p>Quantos dias o aluno pode ficar com o exemplar. O padrão é <strong>14 dias</strong>. Ao realizar um empréstimo, a data de devolução será calculada automaticamente a partir desse número.</p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Limite de Livros por Aluno</h4>
+                <p>Define quantos livros um estudante pode manter emprestados simultaneamente (ex: <strong>2 livros</strong>). Caso o aluno tente pegar um terceiro, o sistema emitirá um aviso.</p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Renovações Permitidas & Bloqueio por Atraso</h4>
+                <p>
+                  Defina se o aluno pode prorrogar o prazo (ex: 1 renovação). Ative a opção <strong>"Bloquear empréstimo se tiver devolução em atraso"</strong> para garantir que os alunos não retirem novos títulos enquanto não devolverem os pendentes.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <h4>Séries Atendidas & Categorias de Livros</h4>
+                <p>
+                  Cadastre as turmas da sua escola (ex: <em>6º ano, 7º ano, 1º EM...</em>) e as seções da biblioteca (ex: <em>Literatura Juvenil, Gibiteca, Didáticos, Poesia</em>) para organizar os filtros.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <span class="callout-icon">💡</span>
+            <div>
+              <strong>Dica de Implantação:</strong> Salve as configurações primeiro. Todos os novos empréstimos criados a partir daí herdarão automaticamente essas regras!
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 2: EQUIPE & FUNCIONÁRIOS
+             ========================================== -->
+        <article class="tut-section" id="modulo-equipe">
+          <div class="section-header">
+            <div class="section-icon-box purple">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 2 de 9</div>
+              <h2 class="section-title">Cadastro da Equipe & Funcionários</h2>
+              <p class="section-lead">Cadastre os bibliotecários, professores mediadores e auxiliares de sala de leitura.</p>
+            </div>
+          </div>
+
+          <p>
+            No painel de <strong>Configurações &rarr; Gestão da Equipe</strong>, o Gestor Escolar pode convidar todos os colaboradores que trabalharão no atendimento da biblioteca.
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Clique no botão "+ Adicionar Funcionário"</h4>
+                <p>Preencha o <strong>Nome Completo</strong> e o <strong>E-mail Institucional</strong> do colaborador.</p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Defina a Função</h4>
+                <p>
+                  <strong>Bibliotecário (Staff):</strong> Pode realizar empréstimos, devoluções, cadastrar livros, importar alunos e imprimir etiquetas.<br />
+                  <strong>Gestor Escolar (Admin):</strong> Além de tudo acima, tem acesso às configurações de prazos e gestão de funcionários.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Ativação de Senha Segura</h4>
+                <p>
+                  O funcionário receberá um convite por e-mail com link para definir sua própria senha de acesso de forma 100% segura. Se necessário, o gestor pode clicar em <em>"Reenviar Convite"</em> a qualquer momento.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout info">
+            <span class="callout-icon">ℹ️</span>
+            <div>
+              <strong>Segurança de Dados:</strong> Cada funcionário deve ter seu próprio login. Isso mantém o registro de auditoria transparente, sabendo quem efetuou cada empréstimo ou devolução.
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 3: ALUNOS & IMPORTAÇÃO SED
+             ========================================== -->
+        <article class="tut-section" id="modulo-alunos">
+          <div class="section-header">
+            <div class="section-icon-box emerald">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 3 de 9</div>
+              <h2 class="section-title">Cadastro de Alunos & Importação SED</h2>
+              <p class="section-lead">Cadastre os estudantes individualmente ou importe centenas de alunos de uma vez via planilha do SED.</p>
+            </div>
+          </div>
+
+          <p>
+            O sistema oferece duas formas simples de manter o cadastro dos estudantes atualizado:
+          </p>
+
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--slate-900); margin: 1.5rem 0 0.75rem;">
+            Método Rápido: Importador da Planilha SED (Secretaria Escolar Digital)
+          </h3>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Exporte a lista no SED ou crie um arquivo Excel</h4>
+                <p>
+                  No portal SED do seu Estado, exporte a relação de alunos da escola em formato <code>.xlsx</code> ou <code>.csv</code> contendo colunas como: <em>Nome do Aluno, RA, Dígito do RA, Série/Ano e Turma</em>.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Acesse "Importar SED" no menu do sistema</h4>
+                <p>
+                  Arraste e solte o arquivo da planilha. O sistema analisa automaticamente as colunas e exibe uma prévia com o total de estudantes encontrados.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Confirme o mapeamento e importe em lote</h4>
+                <p>
+                  O assistente valida se há RAs duplicados e processa todos os estudantes em lote em poucos segundos!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--slate-900); margin: 1.5rem 0 0.75rem;">
+            Cadastro Manual Avulso
+          </h3>
+          <p style="font-size: 0.95rem; color: var(--slate-600);">
+            Para alunos novos transferidos durante o ano letivo, acerte diretamente no menu <strong>Alunos &rarr; + Novo Aluno</strong> preenchendo o nome, RA, série e turma.
+          </p>
+
+          <div class="callout tip">
+            <span class="callout-icon">💡</span>
+            <div>
+              <strong>Carteirinha de Biblioteca:</strong> Ao clicar no aluno, você pode gerar e imprimir sua <strong>Ficha / Carteirinha</strong> com código de barras do RA. O leitor do balcão lê o RA diretamente da carteirinha do aluno!
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 4: CADASTRO DO ACERVO DE LIVROS
+             ========================================== -->
+        <article class="tut-section" id="modulo-livros">
+          <div class="section-header">
+            <div class="section-icon-box blue">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 4 de 9</div>
+              <h2 class="section-title">Acervo & Cadastro de Livros</h2>
+              <p class="section-lead">Cadastre obras rapidamente utilizando o ISBN e a busca automática de dados e capas.</p>
+            </div>
+          </div>
+
+          <p>
+            No menu <strong>Livros & Cópias</strong>, você gerencia todo o catálogo de literatura, obras didáticas e referências da escola.
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Busca Mágica por ISBN</h4>
+                <p>
+                  Ao cadastrar um livro, aponte o leitor de código de barras para o código <strong>ISBN</strong> no verso do livro (ou digite os números). O sistema consulta a base do Google Books e preenche automaticamente: <em>Título, Autor, Editora, Ano, Sinopse e a Capa colorida</em>!
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Defina a Estante / Localização Física</h4>
+                <p>
+                  Informe onde o livro fica guardado na sala (ex: <em>"Estante B - Prateleira 2"</em> ou <em>"Seção HQ"</em>). Isso facilita imensamente na hora de localizar o exemplar quando um aluno fizer o pedido.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Selecione a Categoria e Tags</h4>
+                <p>
+                  Classifique o livro em categorias (ex: <em>Fantasia, Clássicos, Aventura, Ciências</em>) para que os alunos encontrem sugestões de leitura facilmente no Catálogo Público.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <span class="callout-icon">⚠️</span>
+            <div>
+              <strong>Importante: Livro vs. Cópia:</strong> O <em>Livro</em> é o título da obra (ex: <em>"Dom Casmurro"</em>). As <em>Cópias</em> são os exemplares físicos reais que a escola possui na prateleira (ex: se a escola tem 5 exemplares de Dom Casmurro, são 5 cópias com tombos diferentes). No próximo passo, você aprenderá a cadastrar os tombos!
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 5: CÓPIAS, TOMBOS & ETIQUETAS
+             ========================================== -->
+        <article class="tut-section" id="modulo-copias">
+          <div class="section-header">
+            <div class="section-icon-box amber">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="14" x="2" y="5" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 5 de 9</div>
+              <h2 class="section-title">Cópias, Tombos & Etiquetas com Código de Barras</h2>
+              <p class="section-lead">Identifique cada livro físico com um número único de tombo e imprima etiquetas profissionais.</p>
+            </div>
+          </div>
+
+          <p>
+            Para que o controle de circulação seja preciso e rápido, cada exemplar físico recebe um <strong>Código de Tombo</strong> (ex: <code>T-0001</code>, <code>LIVRO-1024</code> ou o número que sua escola já utiliza).
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Adicionar Cópias ao Livro</h4>
+                <p>
+                  Ao salvar ou editar um livro, clique em <strong>"+ Adicionar Cópia"</strong>. Você pode adicionar um único exemplar ou gerar vários em sequência (ex: 3 cópias de uma vez).
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Impressão de Etiquetas com Código de Barras</h4>
+                <p>
+                  No card do livro ou na listagem de cópias, clique no botão <strong>"Imprimir Etiquetas"</strong>. O sistema gera uma folha organizada com as etiquetas contendo: Nome da Escola, Título do Livro, Código de Tombo e o Código de Barras (padrão Code 128).
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Colagem e Proteção do Livro</h4>
+                <p>
+                  Imprima em folha comum (e passe fita adesiva transparente por cima) ou em folhas de etiqueta adesiva (tipo Pimaco/A4). Cole na lombada inferior ou na contracapa do livro.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Interactive Barcode Label Simulator -->
+          <div class="simulator-box">
+            <div class="simulator-header">
+              <div>
+                <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--slate-900); display: flex; align-items: center; gap: 0.5rem;">
+                  <span>🖨️</span> Simulador Interativo de Etiqueta
+                </h4>
+                <p style="font-size: 0.85rem; color: var(--slate-600);">
+                  Experimente digitar abaixo para ver como sua etiqueta fica antes de imprimir:
+                </p>
+              </div>
+              <span class="badge badge-primary">Demonstração ao Vivo</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+              <div>
+                <label class="form-label" for="sim-school" style="font-size:0.8rem;">Nome da Escola</label>
+                <input type="text" id="sim-school" class="form-control" value="E.E. PROF. MARIA OLIVEIRA" style="font-size:0.85rem;" />
+              </div>
+              <div>
+                <label class="form-label" for="sim-title" style="font-size:0.8rem;">Título do Livro</label>
+                <input type="text" id="sim-title" class="form-control" value="O Pequeno Príncipe" style="font-size:0.85rem;" />
+              </div>
+              <div>
+                <label class="form-label" for="sim-tombo" style="font-size:0.8rem;">Código de Tombo</label>
+                <input type="text" id="sim-tombo" class="form-control" value="TOMBO-0042" style="font-size:0.85rem;" />
+              </div>
+            </div>
+
+            <!-- Preview da Etiqueta -->
+            <div class="label-preview-card" id="sim-label-card">
+              <div class="label-preview-school" id="sim-out-school">E.E. PROF. MARIA OLIVEIRA</div>
+              <div class="label-preview-title" id="sim-out-title">O Pequeno Príncipe</div>
+              <svg id="sim-barcode-svg" style="max-width: 100%; height: 50px;"></svg>
+            </div>
+            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.8rem; color: var(--slate-500);">
+              Compatível com 100% dos leitores de código de barras USB e câmeras ópticas.
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 6: EMPRÉSTIMO NO BALCÃO
+             ========================================== -->
+        <article class="tut-section" id="modulo-emprestimos">
+          <div class="section-header">
+            <div class="section-icon-box rose">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/>
+                <path d="M6 2v20"/>
+                <polyline points="10 10 14 10 14 14"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 6 de 9</div>
+              <h2 class="section-title">Circulação: Empréstimo no Balcão</h2>
+              <p class="section-lead">Atenda a fila do recreio com máxima agilidade em menos de 10 segundos por aluno.</p>
+            </div>
+          </div>
+
+          <p>
+            No menu <strong>Empréstimos &rarr; Novo Empréstimo</strong>, você registra a saída do livro com validações automáticas de segurança.
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Identifique o Aluno</h4>
+                <p>
+                  Digite o <strong>Nome</strong> ou o <strong>RA</strong> do estudante no campo de busca (ou bipe o código de barras da carteirinha dele). O sistema busca instantaneamente e mostra se ele está apto ou possui pendências.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Selecione o Exemplar (Bipe o Tombo)</h4>
+                <p>
+                  Passe o leitor de código de barras na etiqueta colada no livro (ou digite o código de tombo). O sistema verifica se o exemplar está <em>Disponível</em>.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Confirmação Automática do Prazo</h4>
+                <p>
+                  A data prevista de devolução é calculada automaticamente (ex: daqui a 14 dias). Basta clicar em <strong>"Confirmar Empréstimo"</strong> (ou apertar Enter). O livro passa instantaneamente para o status <em>Emprestado</em>!
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout tip">
+            <span class="callout-icon">💡</span>
+            <div>
+              <strong>Travas Automáticas de Segurança:</strong> Se o aluno já estiver com o número máximo de livros permitido pela escola ou possuir um empréstimo atrasado, o sistema alertará o atendente para evitar extravios.
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 7: DEVOLUÇÃO & RENOVAÇÃO
+             ========================================== -->
+        <article class="tut-section" id="modulo-devolucoes">
+          <div class="section-header">
+            <div class="section-icon-box teal">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 7 de 9</div>
+              <h2 class="section-title">Devolução Rápida & Renovações</h2>
+              <p class="section-lead">Receba os livros devolvidos com apenas um bipe de leitor e controle prorrogações de prazo.</p>
+            </div>
+          </div>
+
+          <p>
+            No menu <strong>Devoluções</strong> (ou no botão "Devolução" do Painel Inicial):
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Devolução com 1 Único Bipe</h4>
+                <p>
+                  O cursor já fica posicionado no campo de tombo. Ao passar o leitor no livro entregue pelo aluno, o sistema localiza o empréstimo em aberto, registra a data de entrega e coloca o livro novamente como <strong>Disponível</strong> no acervo.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Detecção de Atraso</h4>
+                <p>
+                  Se o exemplar for entregue após a data de vencimento, o sistema exibe um aviso em destaque amarelo/vermelho indicando quantos dias de atraso ocorreram.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Renovação de Prazo</h4>
+                <p>
+                  Se o aluno ainda estiver lendo e solicitar mais tempo, clique no botão <strong>"Renovar"</strong>. O sistema estenderá a data de entrega pelo prazo configurado, respeitando o limite máximo de renovações da escola.
+                </p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 8: CATÁLOGO PÚBLICO & QR CODE
+             ========================================== -->
+        <article class="tut-section" id="modulo-catalogo">
+          <div class="section-header">
+            <div class="section-icon-box blue">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 8 de 9</div>
+              <h2 class="section-title">Catálogo Público & Solicitações dos Alunos</h2>
+              <p class="section-lead">Incentive a leitura permitindo que estudantes e professores consultem o acervo pelo celular.</p>
+            </div>
+          </div>
+
+          <p>
+            A sua escola possui uma página exclusiva do catálogo que <strong>não exige login</strong> (os estudantes não precisam memorizar senhas complicadas).
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Cartaz com QR Code na Porta da Sala de Leitura</h4>
+                <p>
+                  Acesse <strong>Configurações &rarr; Link do Catálogo Público</strong> e baixe o QR Code gerado para a sua escola. Imprima e cole no mural da escola ou na porta da biblioteca.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Navegação do Aluno</h4>
+                <p>
+                  O estudante aponta a câmera do celular para o QR Code e acessa o acervo completo da escola: pode pesquisar por título, ver capas, sinopses e se há exemplares disponíveis na prateleira.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Solicitação de Reserva Online</h4>
+                <p>
+                  O aluno clica em <em>"Solicitar Empréstimo"</em>, informa seu Nome, Série e Turma. A solicitação cai diretamente no menu <strong>Solicitações</strong> do painel do bibliotecário, pronta para ser separada na estante!
+                </p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 9: RELATÓRIOS & ACOMPANHAMENTO
+             ========================================== -->
+        <article class="tut-section" id="modulo-relatorios">
+          <div class="section-header">
+            <div class="section-icon-box indigo">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+                <line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Passo 9 de 9</div>
+              <h2 class="section-title">Relatórios & Acompanhamento de Atrasos</h2>
+              <p class="section-lead">Acompanhe estatísticas de leitura para conselhos pedagógicos e recupere livros pendentes.</p>
+            </div>
+          </div>
+
+          <p>
+            No menu <strong>Relatórios</strong>, você tem acesso a relatórios completos que podem ser filtrados e impressos:
+          </p>
+
+          <div class="step-list">
+            <div class="step-block">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <h4>Lista de Empréstimos Atrasados</h4>
+                <p>
+                  Gera a lista de estudantes com livros pendentes separados por turma (ex: <em>8º ano A</em>). O mediador pode imprimir e passar nas salas para avisar os alunos com cordialidade.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <h4>Ranking dos Livros Mais Lidos</h4>
+                <p>
+                  Descubra quais títulos e gêneros fazem mais sucesso entre os alunos para orientar novas aquisições e projetos pedagógicos de leitura.
+                </p>
+              </div>
+            </div>
+
+            <div class="step-block">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <h4>Inventário do Acervo</h4>
+                <p>
+                  Total de livros cadastrados, exemplares disponíveis, emprestados e em manutenção.
+                </p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+
+        <!-- ==========================================
+             MÓDULO 10: FAQ / DÚVIDAS FREQUENTES
+             ========================================== -->
+        <article class="tut-section" id="modulo-faq">
+          <div class="section-header">
+            <div class="section-icon-box amber">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div>
+              <div class="section-badge-step">Suporte & Dúvidas</div>
+              <h2 class="section-title">Perguntas Frequentes (FAQ)</h2>
+              <p class="section-lead">Respostas diretas para as dúvidas mais comuns dos bibliotecários.</p>
+            </div>
+          </div>
+
+          <div class="faq-list">
+            
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>É obrigatório comprar um leitor de código de barras?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p><strong>Não!</strong> O leitor de código de barras USB agiliza bastante o atendimento (qualquer modelo USB padrão de R$ 40 a R$ 60 funciona sem necessidade de instalar drivers), mas você também pode digitar o número do tombo ou o RA do aluno diretamente no teclado caso não tenha o leitor.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Como os alunos acessam o catálogo se não têm login e senha?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p>O catálogo da biblioteca é 100% público e responsivo. Os alunos só precisam apontar a câmera do celular para o <strong>QR Code</strong> afixado na biblioteca ou clicar no link da escola. Eles não precisam de senha para pesquisar ou solicitar empréstimo.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>E se um livro for danificado ou perdido?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p>No menu <em>Livros & Cópias</em>, localize o exemplar correspondente e mude o status da cópia de <em>"Disponível"</em> para <em>"Danificado"</em> ou <em>"Extraviado"</em>. O sistema manterá o registro histórico e não oferecerá mais essa cópia para novos empréstimos.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Como funciona a importação de alunos via planilha do SED?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p>No portal do SED, exporte a planilha de alunos da escola em formato Excel (.xlsx). No sistema BiblioEscolar, entre em <strong>Importar SED</strong>, selecione o arquivo e clique em importar. O sistema cadastra todos os alunos com nome, RA e turma automaticamente.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Posso usar o sistema em mais de um computador ao mesmo tempo?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p><strong>Sim!</strong> O sistema é em tempo real na nuvem. Vários funcionários podem atender simultaneamente em computadores ou tablets diferentes dentro da mesma escola sem conflito de informações.</p>
+              </div>
+            </div>
+
+            <div class="faq-item">
+              <button class="faq-question">
+                <span>Esqueci minha senha de gestor ou funcionário. Como recuperar?</span>
+                <span class="faq-icon">▼</span>
+              </button>
+              <div class="faq-answer">
+                <p>Na tela inicial de login, clique no link <strong>"Esqueceu a senha?"</strong>, digite seu e-mail institucional e você receberá um link seguro para cadastrar uma nova senha.</p>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="tut-footer">
+    <div class="tut-footer-inner">
+      <div style="max-width: 400px;">
+        <div style="display: flex; align-items: center; gap: 0.6rem; color: #fff; font-weight: 800; font-size: 1.2rem; margin-bottom: 0.75rem;">
+          <span>📚 BiblioEscolar</span>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--slate-400); line-height: 1.6;">
+          Sistema integrado de gestão de biblioteca escolar. Projetado para tornar a leitura acessível e simplificar a rotina de bibliotecários e educadores.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Acesso Rápido</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.88rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li><a href="index.html" style="color: var(--slate-400); text-decoration: none;">Acessar o Sistema (Login)</a></li>
+          <li><a href="catalogo.html" target="_blank" style="color: var(--slate-400); text-decoration: none;">Catálogo Público do Aluno</a></li>
+          <li><a href="#modulo-configuracoes" style="color: var(--slate-400); text-decoration: none;">Guia de Configurações</a></li>
+          <li><a href="#modulo-copias" style="color: var(--slate-400); text-decoration: none;">Gerador de Etiquetas</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color: #fff; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Precisa de Ajuda?</h4>
+        <p style="font-size: 0.88rem; color: var(--slate-400); margin-bottom: 0.75rem;">
+          Fale com a coordenação de tecnologia ou administração escolar.
+        </p>
+        <a href="index.html" class="btn btn-sm btn-primary">Ir para o Painel</a>
+      </div>
+    </div>
+
+    <div style="max-width: var(--tutorial-max-w); margin: 1.5rem auto 0; text-align: center; font-size: 0.8rem; color: var(--slate-500);">
+      &copy; 2026 BiblioEscolar — Sistema de Gestão de Acervo e Circulação Escolar. Todos os direitos reservados.
+    </div>
+  </footer>
+
+  <!-- Tutorial Logic Scripts -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Checklist Interativo com LocalStorage
+      const STORAGE_KEY = 'biblioescolar_tutorial_checklist';
+      let savedState = {};
+      try {
+        savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch(e) {}
+
+      const checkboxes = document.querySelectorAll('.checklist-item input[type="checkbox"]');
+      const progressFill = document.getElementById('checklist-bar');
+      const progressText = document.getElementById('checklist-pct');
+
+      function updateProgress() {
+        let checkedCount = 0;
+        checkboxes.forEach(cb => {
+          const item = cb.closest('.checklist-item');
+          const id = item.getAttribute('data-id');
+          if (savedState[id]) {
+            cb.checked = true;
+            item.classList.add('done');
+            checkedCount++;
+          } else {
+            cb.checked = false;
+            item.classList.remove('done');
+          }
+        });
+
+        const total = checkboxes.length;
+        const pct = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
+        if (progressFill) progressFill.style.width = pct + '%';
+        if (progressText) progressText.textContent = `${pct}% (${checkedCount} de ${total})`;
+      }
+
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+          const item = e.target.closest('.checklist-item');
+          const id = item.getAttribute('data-id');
+          savedState[id] = e.target.checked;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState));
+          updateProgress();
+        });
+      });
+
+      document.getElementById('btn-reset-checklist')?.addEventListener('click', () => {
+        if (confirm('Deseja resetar o checklist de implantação?')) {
+          savedState = {};
+          localStorage.removeItem(STORAGE_KEY);
+          updateProgress();
+        }
+      });
+
+      updateProgress();
+
+      // 2. Barcode Simulator
+      function updateSimulatorBarcode() {
+        const schoolInput = document.getElementById('sim-school');
+        const titleInput = document.getElementById('sim-title');
+        const tomboInput = document.getElementById('sim-tombo');
+
+        const outSchool = document.getElementById('sim-out-school');
+        const outTitle = document.getElementById('sim-out-title');
+        const svgEl = document.getElementById('sim-barcode-svg');
+
+        if (outSchool && schoolInput) outSchool.textContent = schoolInput.value || 'ESCOLA';
+        if (outTitle && titleInput) outTitle.textContent = titleInput.value || 'Título do Livro';
+
+        const codeVal = (tomboInput?.value || 'TOMBO-0001').toUpperCase().trim();
+
+        if (window.JsBarcode && svgEl) {
+          try {
+            window.JsBarcode(svgEl, codeVal, {
+              format: 'CODE128',
+              lineColor: '#000000',
+              width: 1.5,
+              height: 38,
+              displayValue: true,
+              fontSize: 11,
+              font: 'JetBrains Mono',
+              margin: 2
+            });
+          } catch(err) {
+            console.warn('Erro ao gerar simulação de código de barras:', err);
+          }
+        }
+      }
+
+      ['sim-school', 'sim-title', 'sim-tombo'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateSimulatorBarcode);
+      });
+      // Initial render after small delay for CDN
+      setTimeout(updateSimulatorBarcode, 300);
+
+      // 3. FAQ Accordion
+      document.querySelectorAll('.faq-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const item = btn.closest('.faq-item');
+          const wasActive = item.classList.contains('active');
+          document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+          if (!wasActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+
+      // 4. Quick Search Filter
+      const searchInput = document.getElementById('tutorial-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          const query = e.target.value.toLowerCase().trim();
+          const sections = document.querySelectorAll('.tut-section');
+          
+          sections.forEach(sec => {
+            if (!query) {
+              sec.style.display = '';
+              return;
+            }
+            const text = sec.textContent.toLowerCase();
+            if (text.includes(query)) {
+              sec.style.display = '';
+            } else {
+              sec.style.display = 'none';
+            }
+          });
+        });
+      }
+
+      // 5. Active link on scroll
+      window.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('.tut-section');
+        const navLinks = document.querySelectorAll('.tut-nav-link');
+        let currentSectionId = '';
+
+        sections.forEach(sec => {
+          const top = sec.offsetTop - 120;
+          if (window.scrollY >= top) {
+            currentSectionId = sec.getAttribute('id');
+          }
+        });
+
+        if (currentSectionId) {
+          navLinks.forEach(link => {
+            if (link.getAttribute('href') === '#' + currentSectionId) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

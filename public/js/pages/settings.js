@@ -35,13 +35,19 @@ export async function renderSettingsPage(container) {
   const publicUrl = `${window.location.origin}/public/catalogo.html?escola=${school.slug || 'modelo'}`;
 
   container.innerHTML = `
-    <div style="margin-bottom: 2rem;">
-      <h2 style="font-size:1.6rem; font-weight:800; color:var(--slate-900); letter-spacing:-0.02em;">
-        Configurações da Biblioteca
-      </h2>
-      <p style="color:var(--slate-500); font-size:0.95rem; margin-top:0.25rem;">
-        Parâmetros de empréstimos, cadastro de funcionários e regras de <strong>${school.name || 'Sua Escola'}</strong>.
-      </p>
+    <div style="margin-bottom: 2rem; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+      <div>
+        <h2 style="font-size:1.6rem; font-weight:800; color:var(--slate-900); letter-spacing:-0.02em;">
+          Configurações da Biblioteca
+        </h2>
+        <p style="color:var(--slate-500); font-size:0.95rem; margin-top:0.25rem;">
+          Parâmetros de empréstimos, cadastro de funcionários e regras de <strong>${school.name || 'Sua Escola'}</strong>.
+        </p>
+      </div>
+      <a href="tutorial.html" target="_blank" class="btn btn-secondary" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;" title="Ver guia de passo a passo de como configurar a escola">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Passo a Passo / Tutorial</span>
+      </a>
     </div>
 
     <!-- Top Layout: Settings & QR Code -->
