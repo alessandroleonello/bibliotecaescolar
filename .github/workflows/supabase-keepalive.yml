@@ -1,0 +1,29 @@
+name: Supabase Database Keep-Alive (Prevenção de Pausa de 7 Dias)
+
+on:
+  schedule:
+    # Executa a cada 3 dias às 06:00 UTC (100% gratuito e automático no GitHub Actions)
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: # Permite disparar manualmente pelo painel do GitHub
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database Heartbeat
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Aviso: Configure os Secrets SUPABASE_URL e SUPABASE_ANON_KEY nas configurações do repositório no GitHub."
+            exit 0
+          fi
+          echo "Enviando ping para o banco de dados do Supabase para manter o projeto ativo..."
+          RESPONSE=$(curl -s -X POST "${SUPABASE_URL}/rest/v1/heartbeat?id=eq.1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d '{"last_ping": "now()"}')
+          echo "Ping enviado com sucesso!"

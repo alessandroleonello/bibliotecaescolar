@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo da Biblioteca Escolar — Consulta de Livros</title>
+  <meta name="description" content="Consulte os livros disponíveis na biblioteca da sua escola e envie solicitações de empréstimo online." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  
+  <style>
+    body {
+      background: #f8fafc;
+    }
+    .catalog-header {
+      background: linear-gradient(135deg, var(--primary-700), var(--primary-900));
+      color: #ffffff;
+      padding: 3rem 1.5rem 4rem;
+      text-align: center;
+      position: relative;
+    }
+    .catalog-school-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1rem;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .catalog-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+    .catalog-subtitle {
+      font-size: 1.05rem;
+      opacity: 0.9;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+    .catalog-search-box {
+      max-width: 680px;
+      margin: -2rem auto 2.5rem;
+      padding: 0 1rem;
+      position: relative;
+      z-index: 10;
+    }
+    .search-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      padding: 0.6rem 0.8rem;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid var(--border-subtle);
+    }
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0.75rem;
+      font-size: 1.05rem;
+      background: transparent;
+    }
+    .catalog-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .categories-bar {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+      scrollbar-width: none;
+    }
+    .categories-bar::-webkit-scrollbar { display: none; }
+    .category-chip {
+      padding: 0.5rem 1rem;
+      background: #ffffff;
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--transition-fast);
+    }
+    .category-chip.active, .category-chip:hover {
+      background: var(--primary-600);
+      color: #ffffff;
+      border-color: var(--primary-600);
+    }
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .book-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-xs);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .book-cover {
+      height: 220px;
+      background: var(--slate-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .book-body {
+      padding: 1.25rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .book-category {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary-600);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.35rem;
+    }
+    .book-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--slate-900);
+      line-height: 1.3;
+      margin-bottom: 0.25rem;
+    }
+    .book-author {
+      font-size: 0.85rem;
+      color: var(--slate-500);
+      margin-bottom: 0.75rem;
+    }
+    .book-footer {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Public Header -->
+  <header class="catalog-header">
+    <div class="catalog-school-badge">
+      🏫 <span id="catalog-school-name">E.E. Professora Maria Oliveira</span>
+    </div>
+    <h1 class="catalog-title">Biblioteca Aberta</h1>
+    <p class="catalog-subtitle">Explore títulos disponíveis, encontre sua próxima leitura e solicite o empréstimo para retirada na escola.</p>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="catalog-search-box">
+    <div class="search-card">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--slate-400);margin-left:0.5rem;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="catalog-search-input" class="search-input" placeholder="Pesquise por título, autor ou palavra-chave..." />
+      <button class="btn btn-primary" id="btn-search">Buscar</button>
+    </div>
+  </div>
+
+  <!-- Main Catalog Content -->
+  <main class="catalog-content">
+    
+    <!-- Category Filter Chips -->
+    <div class="categories-bar" id="categories-bar">
+      <button class="category-chip active" data-cat="all">Todos os Livros</button>
+      <button class="category-chip" data-cat="Literatura Brasileira">Literatura Brasileira</button>
+      <button class="category-chip" data-cat="Ficção Científica">Ficção Científica</button>
+      <button class="category-chip" data-cat="Infantojuvenil">Infantojuvenil</button>
+      <button class="category-chip" data-cat="História & Geografia">História & Geografia</button>
+      <button class="category-chip" data-cat="Ciências">Ciências</button>
+    </div>
+
+    <!-- Catalog Books Grid -->
+    <div class="books-grid" id="catalog-grid">
+      <div style="grid-column:1/-1; text-align:center; padding:3rem;"><span class="spinner"></span> Carregando livros...</div>
+    </div>
+
+  </main>
+
+  <!-- Modal and Toast -->
+  <div id="modal-overlay" class="modal-overlay"></div>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module">
+    import { listBooks } from './js/db/books.js';
+    import { submitPublicRequest } from './js/db/requests.js';
+    import { listCategories } from './js/db/schools.js';
+    import { pingHeartbeat } from './js/supabase.js';
+    import { toast } from './js/ui/toast.js';
+    import { modal } from './js/ui/modal.js';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const schoolSlug = urlParams.get('escola') || 'modelo';
+    const schoolId = 'escola-modelo-01'; // Default tenant
+
+    let currentCategory = 'all';
+    let allBooks = [];
+
+    async function loadCatalog() {
+      // Ping keep-alive silencioso
+      pingHeartbeat().catch(() => {});
+
+      // Carrega categorias configuradas da escola
+      const categories = await listCategories(schoolId);
+      const catBar = document.getElementById('categories-bar');
+      if (catBar) {
+        catBar.innerHTML = `
+          <button class="category-chip active" data-cat="all">Todos os Livros</button>
+          ${categories.map(c => `<button class="category-chip" data-cat="${c}">${c}</button>`).join('')}
+        `;
+
+        catBar.querySelectorAll('.category-chip').forEach(chip => {
+          chip.addEventListener('click', () => {
+            catBar.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            currentCategory = chip.getAttribute('data-cat');
+            renderGrid(document.getElementById('catalog-search-input').value);
+          });
+        });
+      }
+
+      allBooks = await listBooks(schoolId);
+      renderGrid();
+    }
+
+    function renderGrid(searchFilter = '') {
+      const grid = document.getElementById('catalog-grid');
+      let filtered = allBooks;
+
+      if (currentCategory !== 'all') {
+        filtered = filtered.filter(b => b.category === currentCategory);
+      }
+
+      if (searchFilter) {
+        const norm = searchFilter.toLowerCase();
+        filtered = filtered.filter(b => 
+          b.title.toLowerCase().includes(norm) ||
+          (b.authors && b.authors.some(a => a.toLowerCase().includes(norm)))
+        );
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding:3rem 1rem;">
+            <div class="empty-state">
+              <div class="empty-state-icon">📚</div>
+              <div class="empty-state-title">Nenhum livro encontrado</div>
+              <div class="empty-state-text">Tente pesquisar por outros termos ou selecionar outra categoria.</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      const gradients = [
+        'linear-gradient(135deg, #fbcfe8, #f472b6)',
+        'linear-gradient(135deg, #c7d2fe, #818cf8)',
+        'linear-gradient(135deg, #fed7aa, #fb923c)',
+        'linear-gradient(135deg, #bae6fd, #38bdf8)',
+        'linear-gradient(135deg, #bbf7d0, #4ade80)'
+      ];
+
+      grid.innerHTML = filtered.map((book, idx) => {
+        const isAvail = (book.availableCopies || 0) > 0;
+        const grad = gradients[idx % gradients.length];
+
+        return `
+          <div class="book-card">
+            <div class="book-cover" style="background: ${grad};">
+              ${book.coverUrl ? `
+                <img src="${book.coverUrl}" alt="${book.title}" style="width:100%;height:100%;object-fit:cover;" />
+              ` : `
+                <div style="font-size:3.5rem;">📖</div>
+              `}
+            </div>
+            <div class="book-body">
+              <div class="book-category">${book.category || 'Geral'}</div>
+              <h3 class="book-title">${book.title}</h3>
+              <div class="book-author">${(book.authors || []).join(', ')}</div>
+              <div class="book-footer">
+                ${isAvail ? `
+                  <span class="badge badge-success"><span class="badge-dot"></span> Disponível</span>
+                  <button class="btn btn-sm btn-primary btn-request-book" data-title="${book.title}" data-id="${book.id}">
+                    Solicitar
+                  </button>
+                ` : `
+                  <span class="badge badge-warning"><span class="badge-dot"></span> Emprestado</span>
+                  <button class="btn btn-sm btn-secondary" disabled>Indisponível</button>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach request modal
+      grid.querySelectorAll('.btn-request-book').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bookTitle = btn.getAttribute('data-title');
+          const bookId = btn.getAttribute('data-id');
+
+          modal.open({
+            title: 'Solicitar Retirada de Livro',
+            body: `
+              <p style="font-size:0.9rem;color:var(--slate-600);margin-bottom:1.25rem;">
+                Você está solicitando o exemplar de: <strong style="color:var(--slate-900);">${bookTitle}</strong>.
+                Informe seus dados para a biblioteca reservar para retirada:
+              </p>
+              <form id="public-request-form">
+                <!-- Honeypot anti-spam -->
+                <input type="text" style="display:none;" name="website_url" id="req-honeypot" />
+
+                <div class="form-group">
+                  <label class="form-label" for="req-student-name">Seu Nome Completo <span class="required">*</span></label>
+                  <input type="text" id="req-student-name" class="form-control" placeholder="ex: Mariana Duarte Souza" required minlength="3" maxlength="100" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="req-student-grade">Série / Ano Escolar <span class="required">*</span></label>
+                  <select id="req-student-grade" class="form-control" required>
+                    <option value="">Selecione sua série...</option>
+                    <option value="6º ano">6º ano</option>
+                    <option value="7º ano">7º ano</option>
+                    <option value="8º ano">8º ano</option>
+                    <option value="9º ano">9º ano</option>
+                    <option value="1º EM">1º ano Ensino Médio</option>
+                    <option value="2º EM">2º ano Ensino Médio</option>
+                    <option value="3º EM">3º ano Ensino Médio</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="req-student-ra">Número do RA (opcional)</label>
+                  <input type="text" id="req-student-ra" class="form-control mono" placeholder="ex: 13579246-1" />
+                </div>
+              </form>
+            `,
+            footer: `
+              <button class="btn btn-secondary" id="modal-req-cancel">Cancelar</button>
+              <button class="btn btn-primary" id="modal-req-submit">Confirmar Solicitação</button>
+            `
+          });
+
+          document.getElementById('modal-req-cancel')?.addEventListener('click', () => modal.close());
+          document.getElementById('modal-req-submit')?.addEventListener('click', async () => {
+            const honeypot = document.getElementById('req-honeypot')?.value;
+            if (honeypot) return; // Anti-bot
+
+            const name = document.getElementById('req-student-name')?.value.trim();
+            const grade = document.getElementById('req-student-grade')?.value;
+            const ra = document.getElementById('req-student-ra')?.value.trim();
+
+            if (!name || name.length < 3 || !grade) {
+              toast.warning('Informe seu nome completo e selecione sua série.');
+              return;
+            }
+
+            try {
+              await submitPublicRequest(schoolId, {
+                bookId,
+                bookTitle,
+                studentName: name,
+                grade,
+                studentRa: ra
+              });
+              modal.close();
+              toast.success(`Solicitação enviada com sucesso! Retire "${bookTitle}" no balcão da biblioteca em até 48 horas.`);
+            } catch (err) {
+              toast.error(err.message);
+            }
+          });
+        });
+      });
+    }
+
+    // Category chips filter
+    document.querySelectorAll('.category-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        currentCategory = chip.getAttribute('data-cat');
+        renderGrid(document.getElementById('catalog-search-input').value);
+      });
+    });
+
+    // Search input
+    const searchInput = document.getElementById('catalog-search-input');
+    searchInput.addEventListener('input', () => renderGrid(searchInput.value));
+    document.getElementById('btn-search')?.addEventListener('click', () => renderGrid(searchInput.value));
+
+    // Boot
+    loadCatalog();
+  </script>
+</body>
+</html>
