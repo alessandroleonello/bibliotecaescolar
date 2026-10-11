@@ -21,49 +21,7 @@ export const DEFAULT_CATEGORIES = [
 
 function getLocalSchools() {
   const data = localStorage.getItem(STORAGE_KEY);
-  if (data) return JSON.parse(data);
-  const initial = [
-    {
-      id: 'escola-modelo-01',
-      name: 'E.E. Professora Maria Oliveira',
-      email: 'diretoria@escolapadrao.edu.br',
-      slug: 'maria-oliveira',
-      status: 'active',
-      phone: '(11) 3456-7890',
-      created_at: new Date().toISOString(),
-      settings: {
-        loanDays: 14,
-        maxLoansPerStudent: 2,
-        renewalsAllowed: 1,
-        blockIfOverdue: true,
-        publicCatalogEnabled: true,
-        grades: ['6º ano', '7º ano', '8º ano', '9º ano', '1º EM', '2º EM', '3º EM'],
-        requestHoldHours: 48,
-        categories: [...DEFAULT_CATEGORIES]
-      }
-    },
-    {
-      id: 'escola-pedro-02',
-      name: 'Colégio Estadual Dom Pedro II',
-      email: 'admin@pedrosegundo.edu.br',
-      slug: 'dom-pedro-2',
-      status: 'active',
-      phone: '(11) 9876-5432',
-      created_at: new Date().toISOString(),
-      settings: {
-        loanDays: 14,
-        maxLoansPerStudent: 3,
-        renewalsAllowed: 2,
-        blockIfOverdue: true,
-        publicCatalogEnabled: true,
-        grades: ['Fundamental II', 'Ensino Médio'],
-        requestHoldHours: 48,
-        categories: [...DEFAULT_CATEGORIES]
-      }
-    }
-  ];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalSchools(schools) {
@@ -339,21 +297,7 @@ export async function deleteCategory(schoolId, categoryName) {
  */
 function getLocalStaff(schoolId) {
   const data = localStorage.getItem(STAFF_KEY + schoolId);
-  if (data) return JSON.parse(data);
-  const initial = [
-    {
-      id: 'staff-001',
-      name: 'Carlos Santos',
-      email: 'biblioteca@escolapadrao.edu.br',
-      jobTitle: 'Bibliotecário Chefe',
-      role: 'staff',
-      schoolId,
-      active: true,
-      created_at: new Date().toISOString()
-    }
-  ];
-  localStorage.setItem(STAFF_KEY + schoolId, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalStaff(schoolId, list) {

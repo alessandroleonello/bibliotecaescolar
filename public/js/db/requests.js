@@ -28,36 +28,7 @@ function fromDb(row) {
 
 function getLocalRequests(schoolId) {
   const data = localStorage.getItem(STORAGE_KEY + schoolId);
-  if (data) return JSON.parse(data);
-  const now = new Date();
-  const initial = [
-    {
-      id: 'req-001',
-      schoolId,
-      bookId: 'livro-001',
-      bookTitle: 'Dom Casmurro',
-      studentName: 'Mariana Duarte Souza',
-      grade: '7º ano',
-      studentRa: '13579246-1',
-      status: 'pending',
-      createdAt: new Date(now.getTime() - 2 * 3600000).toISOString(),
-      expiresAt: addDays(now, 2).toISOString()
-    },
-    {
-      id: 'req-002',
-      schoolId,
-      bookId: 'livro-004',
-      bookTitle: 'Fahrenheit 451',
-      studentName: 'Gabriel Ribeiro Farias',
-      grade: '1º EM',
-      studentRa: '12345678-9',
-      status: 'pending',
-      createdAt: new Date(now.getTime() - 5 * 3600000).toISOString(),
-      expiresAt: addDays(now, 2).toISOString()
-    }
-  ];
-  localStorage.setItem(STORAGE_KEY + schoolId, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalRequests(schoolId, requests) {

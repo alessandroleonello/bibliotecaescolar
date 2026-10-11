@@ -8,20 +8,7 @@ const STORAGE_KEY = 'biblio_local_copies_';
 
 function getLocalCopies(schoolId) {
   const data = localStorage.getItem(STORAGE_KEY + schoolId);
-  if (data) return JSON.parse(data);
-  const initial = [
-    { id: 'cop-101', bookId: 'livro-001', code: 'TMB-00101', status: 'available', condition: 'Bom', notes: '' },
-    { id: 'cop-102', bookId: 'livro-001', code: 'TMB-00102', status: 'available', condition: 'Excelente', notes: '' },
-    { id: 'cop-103', bookId: 'livro-001', code: 'TMB-00103', status: 'available', condition: 'Bom', notes: '' },
-    { id: 'cop-104', bookId: 'livro-001', code: 'TMB-00104', status: 'loaned', condition: 'Bom', notes: '' },
-    { id: 'cop-201', bookId: 'livro-002', code: 'TMB-00201', status: 'available', condition: 'Novo', notes: '' },
-    { id: 'cop-202', bookId: 'livro-002', code: 'TMB-00202', status: 'available', condition: 'Novo', notes: '' },
-    { id: 'cop-203', bookId: 'livro-002', code: 'TMB-00203', status: 'available', condition: 'Excelente', notes: '' },
-    { id: 'cop-204', bookId: 'livro-002', code: 'TMB-00204', status: 'available', condition: 'Bom', notes: '' },
-    { id: 'cop-205', bookId: 'livro-002', code: 'TMB-00205', status: 'loaned', condition: 'Bom', notes: '' }
-  ];
-  localStorage.setItem(STORAGE_KEY + schoolId, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalCopies(schoolId, copies) {

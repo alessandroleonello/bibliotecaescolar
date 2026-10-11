@@ -307,44 +307,6 @@
   color: var(--slate-500);
 }
 
-.demo-pills {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: var(--slate-50);
-  border: 1px dashed var(--slate-300);
-  border-radius: var(--radius-md);
-  font-size: 0.8rem;
-}
-
-.demo-pills-title {
-  font-weight: 700;
-  color: var(--slate-700);
-  margin-bottom: 0.5rem;
-}
-
-.demo-chips {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.demo-chip {
-  padding: 0.25rem 0.6rem;
-  background: #ffffff;
-  border: 1px solid var(--slate-200);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.775rem;
-  font-weight: 600;
-  color: var(--primary-700);
-  transition: all var(--transition-fast);
-}
-
-.demo-chip:hover {
-  background: var(--primary-50);
-  border-color: var(--primary-300);
-}
-
 /* Mobile responsive menu */
 .menu-toggle {
   display: none;

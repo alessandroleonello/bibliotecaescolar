@@ -12,53 +12,7 @@ const STORAGE_KEY = 'biblio_local_loans_';
 
 function getLocalLoans(schoolId) {
   const data = localStorage.getItem(STORAGE_KEY + schoolId);
-  if (data) return JSON.parse(data);
-  const now = new Date();
-  
-  const pastDue = new Date(now);
-  pastDue.setDate(pastDue.getDate() - 5);
-  
-  const futureDue = new Date(now);
-  futureDue.setDate(futureDue.getDate() + 9);
-
-  const initial = [
-    {
-      id: 'emp-001',
-      bookId: 'livro-001',
-      copyId: 'cop-104',
-      studentId: 'aluno-001',
-      snapshot: {
-        bookTitle: 'Dom Casmurro',
-        copyCode: 'TMB-00104',
-        studentName: 'Lucas Silva Santos',
-        grade: '8º ano'
-      },
-      loanedAt: new Date(now.getTime() - 19 * 86400000).toISOString(),
-      dueAt: pastDue.toISOString(),
-      renewals: 0,
-      status: 'open',
-      loanedBy: 'Carlos Santos'
-    },
-    {
-      id: 'emp-002',
-      bookId: 'livro-002',
-      copyId: 'cop-205',
-      studentId: 'aluno-002',
-      snapshot: {
-        bookTitle: 'O Pequeno Príncipe',
-        copyCode: 'TMB-00205',
-        studentName: 'Beatriz Almeida Costa',
-        grade: '9º ano'
-      },
-      loanedAt: new Date(now.getTime() - 5 * 86400000).toISOString(),
-      dueAt: futureDue.toISOString(),
-      renewals: 0,
-      status: 'open',
-      loanedBy: 'Carlos Santos'
-    }
-  ];
-  localStorage.setItem(STORAGE_KEY + schoolId, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalLoans(schoolId, loans) {

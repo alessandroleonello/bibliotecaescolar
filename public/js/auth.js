@@ -7,42 +7,10 @@ let currentUser = null;
 let currentProfile = null;
 let authListeners = [];
 
-export const DEMO_USERS = {
-  superadmin: {
-    uid: 'demo-superadmin-uid',
-    email: 'admin@plataforma.gov.br',
-    name: 'Superadministrador do Sistema',
-    role: 'superadmin',
-    schoolId: null,
-    active: true
-  },
-  school_admin: {
-    uid: 'demo-schooladmin-uid',
-    email: 'diretoria@escolapadrao.edu.br',
-    name: 'Profa. Maria Oliveira (Diretora)',
-    role: 'school_admin',
-    schoolId: 'escola-modelo-01',
-    active: true
-  },
-  staff: {
-    uid: 'demo-staff-uid',
-    email: 'biblioteca@escolapadrao.edu.br',
-    name: 'Carlos Santos (Bibliotecário)',
-    role: 'staff',
-    schoolId: 'escola-modelo-01',
-    active: true
-  }
-};
-
 /**
  * Carrega o perfil do usuário na tabela public.profiles
  */
 export async function loadUserProfile(userId) {
-  const demoRole = localStorage.getItem('demo_session_role');
-  if (demoRole && DEMO_USERS[demoRole]) {
-    return DEMO_USERS[demoRole];
-  }
-
   if (isConfigured && supabase) {
     try {
       const { data, error } = await supabase
@@ -75,15 +43,6 @@ export async function loadUserProfile(userId) {
  */
 export function initAuth(onChangeCallback) {
   if (onChangeCallback) authListeners.push(onChangeCallback);
-
-  // Modo demo
-  const demoRole = localStorage.getItem('demo_session_role');
-  if (demoRole && DEMO_USERS[demoRole]) {
-    currentUser = { id: DEMO_USERS[demoRole].uid, email: DEMO_USERS[demoRole].email };
-    currentProfile = DEMO_USERS[demoRole];
-    notifyListeners();
-    return;
-  }
 
   if (!isConfigured || !supabase) {
     notifyListeners();
@@ -126,22 +85,11 @@ function notifyListeners() {
 }
 
 /**
- * Login com e-mail e senha
+ * Login com e-mail e senha institucional
  */
 export async function login(email, password) {
-  // Atalho demo imediato
-  for (const [key, demo] of Object.entries(DEMO_USERS)) {
-    if (email === demo.email) {
-      localStorage.setItem('demo_session_role', key);
-      currentUser = { id: demo.uid, email: demo.email };
-      currentProfile = demo;
-      notifyListeners();
-      return { user: currentUser, profile: currentProfile };
-    }
-  }
-
   if (!isConfigured || !supabase) {
-    throw new Error('Supabase não configurado. Use as contas demo ou configure as credenciais.');
+    throw new Error('Supabase não conectado. Verifique as configurações do projeto.');
   }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -174,7 +122,6 @@ export async function login(email, password) {
  * Logout
  */
 export async function logout() {
-  localStorage.removeItem('demo_session_role');
   currentUser = null;
   currentProfile = null;
   if (isConfigured && supabase) {
@@ -188,22 +135,13 @@ export async function logout() {
  */
 export async function resetPassword(email) {
   if (!isConfigured || !supabase) {
-    return true;
+    throw new Error('Supabase não configurado.');
   }
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${window.location.origin}/public/index.html#/login`
   });
   if (error) throw new Error(error.message);
   return true;
-}
-
-export function setDemoSession(roleKey) {
-  if (DEMO_USERS[roleKey]) {
-    localStorage.setItem('demo_session_role', roleKey);
-    currentUser = { id: DEMO_USERS[roleKey].uid, email: DEMO_USERS[roleKey].email };
-    currentProfile = DEMO_USERS[roleKey];
-    notifyListeners();
-  }
 }
 
 export function getCurrentUser() {

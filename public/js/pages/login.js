@@ -1,16 +1,12 @@
 /**
  * Login Page Controller
  */
-import { login, resetPassword, DEMO_USERS, setDemoSession } from '../auth.js';
+import { login, resetPassword } from '../auth.js';
 import { toast } from '../ui/toast.js';
 import { modal } from '../ui/modal.js';
 import { router } from '../router.js';
-import { getActiveSupabaseConfig, saveSupabaseConfig } from '../supabase-config.js';
 
 export function renderLoginPage(container) {
-  const currentConfig = getActiveSupabaseConfig();
-  const isDemo = currentConfig.anonKey.includes('DEMO-KEY') || currentConfig.url.includes('xyzcompany');
-
   container.innerHTML = `
     <div class="auth-page">
       <div class="auth-card">
@@ -56,25 +52,6 @@ export function renderLoginPage(container) {
               <span>Entrar no sistema</span>
             </button>
           </form>
-
-          <!-- Quick Test / Demo Accounts Section -->
-          <div class="demo-pills">
-            <div class="demo-pills-title">🚀 Teste Rápido (Ambiente de Demonstração):</div>
-            <div class="demo-chips">
-              <button class="demo-chip" data-role="superadmin">👑 Superadmin</button>
-              <button class="demo-chip" data-role="school_admin">🏫 Gestor Escolar</button>
-              <button class="demo-chip" data-role="staff">📖 Bibliotecário</button>
-            </div>
-            <div style="font-size:0.72rem; color:var(--slate-500); margin-top:0.4rem;">
-              Clique em um perfil para login imediato sem necessidade de senha.
-            </div>
-          </div>
-
-          <div class="auth-footer-help">
-            <button type="button" id="btn-config-supabase" class="btn-ghost" style="font-size: 0.8rem;">
-              ⚡ Configurar chaves do Supabase
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -114,23 +91,6 @@ export function renderLoginPage(container) {
     }
   });
 
-  // Quick Demo click buttons
-  container.querySelectorAll('.demo-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const role = chip.getAttribute('data-role');
-      const demoUser = DEMO_USERS[role];
-      if (demoUser) {
-        setDemoSession(role);
-        toast.success(`Entrando como ${demoUser.name} (${role})`);
-        if (role === 'superadmin') {
-          router.navigate('/escolas');
-        } else {
-          router.navigate('/dashboard');
-        }
-      }
-    });
-  });
-
   // Forgot password
   container.querySelector('#btn-forgot-password').addEventListener('click', () => {
     modal.open({
@@ -163,51 +123,6 @@ export function renderLoginPage(container) {
         modal.close();
       } catch (e) {
         toast.error('Erro ao enviar e-mail: ' + e.message);
-      }
-    });
-  });
-
-  // Supabase Config modal
-  container.querySelector('#btn-config-supabase').addEventListener('click', () => {
-    const cfg = getActiveSupabaseConfig();
-    modal.open({
-      title: 'Configuração do Supabase',
-      body: `
-        <p style="font-size:0.875rem;color:var(--slate-600);margin-bottom:1rem;">
-          Conecte sua base de dados Supabase em segundos. Obtenha essas credenciais no menu <strong>Project Settings -> API</strong> do painel Supabase.
-        </p>
-        <div class="form-group">
-          <label class="form-label" for="cfg-url">Project URL</label>
-          <input type="url" id="cfg-url" class="form-control" placeholder="https://xxxxxxxx.supabase.co" value="${cfg.url || ''}" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="cfg-anon-key">Project Anon Key (public)</label>
-          <textarea id="cfg-anon-key" class="form-control mono" rows="4" style="font-size:0.8rem" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">${cfg.anonKey || ''}</textarea>
-        </div>
-        <div style="background:var(--primary-50); border:1px solid var(--primary-200); border-radius:var(--radius-sm); padding:0.75rem; font-size:0.8rem; color:var(--primary-900);">
-          💡 <strong>Keep-alive 100% Gratuito:</strong> Para evitar que o banco seja pausado após 7 dias de inatividade no plano gratuito, nosso projeto inclui uma Action automática no GitHub que mantém a base acordada sem custos.
-        </div>
-      `,
-      footer: `
-        <button class="btn btn-secondary" id="modal-cfg-cancel">Cancelar</button>
-        <button class="btn btn-primary" id="modal-cfg-save">Salvar Credenciais</button>
-      `
-    });
-
-    document.getElementById('modal-cfg-cancel')?.addEventListener('click', () => modal.close());
-    document.getElementById('modal-cfg-save')?.addEventListener('click', () => {
-      const url = document.getElementById('cfg-url')?.value.trim();
-      const anonKey = document.getElementById('cfg-anon-key')?.value.trim();
-      if (!url || !anonKey) {
-        toast.warning('Preencha a URL e a Anon Key do Supabase.');
-        return;
-      }
-      try {
-        saveSupabaseConfig({ url, anonKey });
-        toast.success('Configurações do Supabase salvas! Recarregando...');
-        setTimeout(() => window.location.reload(), 1000);
-      } catch (e) {
-        toast.error('Erro ao salvar: ' + e.message);
       }
     });
   });

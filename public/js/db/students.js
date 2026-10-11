@@ -8,59 +8,7 @@ const STORAGE_KEY = 'biblio_local_students_';
 
 function getLocalStudents(schoolId) {
   const data = localStorage.getItem(STORAGE_KEY + schoolId);
-  if (data) return JSON.parse(data);
-  const initial = [
-    {
-      id: 'aluno-001',
-      name: 'Lucas Silva Santos',
-      ra: '10987654',
-      raDigit: 'X',
-      grade: '8º ano',
-      classroom: 'Turma A',
-      shift: 'Manhã',
-      active: true,
-      source: 'manual',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'aluno-002',
-      name: 'Beatriz Almeida Costa',
-      ra: '11223344',
-      raDigit: '5',
-      grade: '9º ano',
-      classroom: 'Turma B',
-      shift: 'Tarde',
-      active: true,
-      source: 'manual',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'aluno-003',
-      name: 'Gabriel Ribeiro Farias',
-      ra: '12345678',
-      raDigit: '9',
-      grade: '1º EM',
-      classroom: 'Turma A',
-      shift: 'Manhã',
-      active: true,
-      source: 'import',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 'aluno-004',
-      name: 'Mariana Duarte Souza',
-      ra: '13579246',
-      raDigit: '1',
-      grade: '7º ano',
-      classroom: 'Turma C',
-      shift: 'Tarde',
-      active: true,
-      source: 'import',
-      created_at: new Date().toISOString()
-    }
-  ];
-  localStorage.setItem(STORAGE_KEY + schoolId, JSON.stringify(initial));
-  return initial;
+  return data ? JSON.parse(data) : [];
 }
 
 function saveLocalStudents(schoolId, students) {
