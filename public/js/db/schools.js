@@ -61,7 +61,7 @@ export async function getSchool(schoolId) {
 /**
  * Cadastra uma nova escola e cria a conta do gestor escolar no Supabase Auth
  */
-export async function createSchool({ name, email, slug, phone = '' }) {
+export async function createSchool({ name, email, slug, phone = '', password = '' }) {
   const cleanSlug = (slug || name)
     .toLowerCase()
     .normalize('NFD')
@@ -70,10 +70,13 @@ export async function createSchool({ name, email, slug, phone = '' }) {
     .replace(/(^-|-$)/g, '');
 
   const schoolId = 'esc-' + Date.now();
+  const cleanEmail = email.trim().toLowerCase();
+  const userPassword = password ? password.trim() : ('Escola@' + Math.floor(1000 + Math.random() * 9000));
+
   const schoolData = {
     id: schoolId,
     name,
-    email,
+    email: cleanEmail,
     slug: cleanSlug,
     phone,
     status: 'active',
@@ -96,16 +99,15 @@ export async function createSchool({ name, email, slug, phone = '' }) {
 
       // 2. Cria conta de acesso do gestor via cliente secundário (sem deslogar superadmin)
       const secClient = getSecondarySupabase();
-      const tempPassword = 'Escola#' + Math.random().toString(36).substring(2, 10);
       const { data: authData, error: authErr } = await secClient.auth.signUp({
-        email,
-        password: tempPassword
+        email: cleanEmail,
+        password: userPassword
       });
 
       if (authData?.user) {
         await supabase.from('profiles').insert({
           id: authData.user.id,
-          email,
+          email: cleanEmail,
           name: `Gestor (${name})`,
           role: 'school_admin',
           school_id: schoolId,
@@ -113,10 +115,14 @@ export async function createSchool({ name, email, slug, phone = '' }) {
           active: true
         });
 
-        // 3. Envia e-mail de redefinição para que a escola defina sua senha própria
-        await secClient.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/public/index.html#/login`
-        });
+        // Tenta também disparar o e-mail como alternativa adicional
+        try {
+          await secClient.auth.resetPasswordForEmail(cleanEmail, {
+            redirectTo: `${window.location.origin}/public/index.html#/login`
+          });
+        } catch (e) {
+          console.warn('Envio de e-mail opcional falhou:', e);
+        }
       }
 
       pingHeartbeat();
@@ -129,8 +135,31 @@ export async function createSchool({ name, email, slug, phone = '' }) {
   locals.unshift({ ...schoolData, created_at: new Date().toISOString() });
   saveLocalSchools(locals);
 
-  return schoolData;
+  return { ...schoolData, generatedPassword: userPassword };
 }
+
+/**
+ * Altera ou define diretamente a senha do gestor de uma escola sem depender de e-mail
+ */
+export async function setSchoolManagerPassword(email, newPassword) {
+  const cleanEmail = email.trim().toLowerCase();
+  if (isConfigured && supabase) {
+    try {
+      const { data, error } = await supabase.rpc('admin_set_user_password', {
+        user_email: cleanEmail,
+        new_password: newPassword
+      });
+      if (error) throw new Error(error.message || 'Erro ao alterar senha.');
+      if (data && data.success === false) throw new Error(data.message || 'Não foi possível alterar a senha.');
+      return true;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+  }
+  return true;
+}
+
 
 /**
  * Ativa ou desativa uma escola

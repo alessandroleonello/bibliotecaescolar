@@ -1,7 +1,7 @@
 /**
  * Superadmin - School Management Page Controller
  */
-import { listSchools, createSchool, toggleSchoolStatus, resendSchoolInvite } from '../db/schools.js';
+import { listSchools, createSchool, toggleSchoolStatus, resendSchoolInvite, setSchoolManagerPassword } from '../db/schools.js';
 import { toast } from '../ui/toast.js';
 import { modal } from '../ui/modal.js';
 
@@ -14,7 +14,7 @@ export async function renderSchoolsPage(container) {
             Gestão de Escolas
           </h2>
           <p style="color:var(--slate-500); font-size:0.95rem; margin-top:0.25rem;">
-            Cadastre novas escolas na plataforma e gerencie acessos institucionais.
+            Cadastre novas escolas na plataforma e gerencie acessos e senhas institucionais.
           </p>
         </div>
 
@@ -60,7 +60,7 @@ export async function renderSchoolsPage(container) {
               <th>E-mail do Gestor</th>
               <th>Slug / Link Público</th>
               <th>Status</th>
-              <th>Ações</th>
+              <th>Ações de Acesso</th>
             </tr>
           </thead>
           <tbody id="schools-table-body">
@@ -74,6 +74,57 @@ export async function renderSchoolsPage(container) {
       </div>
     </div>
   `;
+
+  // Função auxiliar para exibir tela com credenciais prontas para copiar
+  function showCredentialsModal(schoolName, email, password) {
+    const loginUrl = `${window.location.origin}/public/index.html#/login`;
+    const message = `📚 *Acesso ao Sistema de Biblioteca Escolar*\n\nOlá! Seguem seus dados de acesso ao sistema da sua escola (*${schoolName}*):\n\n🔗 *Link de Login:* ${loginUrl}\n📧 *E-mail:* ${email}\n🔑 *Senha:* ${password}\n\nRecomendamos salvar este link nos seus favoritos!`;
+
+    modal.open({
+      title: 'Credenciais de Acesso Definidas',
+      body: `
+        <div style="background:var(--success-bg, #ecfdf5); border:1px solid var(--success-border, #a7f3d0); border-radius:8px; padding:1rem; margin-bottom:1.25rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; color:#065f46; font-weight:700;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Senha configurada com sucesso!</span>
+          </div>
+          <p style="font-size:0.875rem; color:#047857; margin-top:0.35rem;">
+            A gestora da escola já pode fazer login imediatamente com os dados abaixo, sem precisar esperar nem clicar em links de e-mail.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Link de Acesso</label>
+          <input type="text" class="form-control mono" readonly value="${loginUrl}" />
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">E-mail de Login</label>
+            <input type="text" class="form-control mono" readonly value="${email}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Senha</label>
+            <input type="text" class="form-control mono" style="font-weight:700; color:var(--primary-700);" readonly value="${password}" />
+          </div>
+        </div>
+      `,
+      footer: `
+        <button class="btn btn-secondary" id="modal-close-cred">Fechar</button>
+        <button class="btn btn-primary" id="modal-copy-cred">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span>Copiar Mensagem para WhatsApp</span>
+        </button>
+      `
+    });
+
+    document.getElementById('modal-close-cred')?.addEventListener('click', () => modal.close());
+    document.getElementById('modal-copy-cred')?.addEventListener('click', () => {
+      navigator.clipboard.writeText(message)
+        .then(() => toast.success('Dados de acesso copiados! Pronto para colar no WhatsApp ou e-mail.'))
+        .catch(() => toast.info('Copie os dados manualmente dos campos acima.'));
+    });
+  }
 
   async function loadSchools() {
     try {
@@ -112,7 +163,9 @@ export async function renderSchoolsPage(container) {
               <div style="font-weight:700; color:var(--slate-900);">${s.name}</div>
               <div style="font-size:0.775rem; color:var(--slate-500);">ID: ${s.id}</div>
             </td>
-            <td>${s.email}</td>
+            <td>
+              <div style="font-weight:500;">${s.email}</div>
+            </td>
             <td>
               <span class="mono" style="font-size:0.8rem; background:var(--slate-100); padding:2px 6px; border-radius:4px;">
                 ${s.slug || '-'}
@@ -124,12 +177,16 @@ export async function renderSchoolsPage(container) {
                 : '<span class="badge badge-warning"><span class="badge-dot"></span> Inativa</span>'}
             </td>
             <td>
-              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                <button class="btn btn-sm btn-secondary btn-resend-invite" data-email="${s.email}" title="Reenviar Convite">
-                  Reenviar Convite
+              <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+                <button class="btn btn-sm btn-primary btn-set-pwd" data-email="${s.email}" data-name="${s.name}" title="Definir nova senha diretamente sem depender de e-mail">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>Definir Senha</span>
                 </button>
-                <button class="btn btn-sm btn-ghost btn-copy-link" data-slug="${s.slug}" title="Copiar Link Público">
-                  Copiar Link
+                <button class="btn btn-sm btn-secondary btn-resend-invite" data-email="${s.email}" title="Reenviar E-mail de Recuperação/Convite">
+                  Reenviar E-mail
+                </button>
+                <button class="btn btn-sm btn-ghost btn-copy-link" data-slug="${s.slug}" title="Copiar Link do Catálogo Público">
+                  Link Aluno
                 </button>
                 <button class="btn btn-sm btn-ghost btn-toggle-status" data-id="${s.id}" data-status="${isActive ? 'inactive' : 'active'}" style="color:${isActive ? 'var(--danger-main)' : 'var(--success-main)'}">
                   ${isActive ? 'Desativar' : 'Ativar'}
@@ -140,15 +197,79 @@ export async function renderSchoolsPage(container) {
         `;
       }).join('');
 
+      // Ação: Definir Senha Manualmente
+      tbody.querySelectorAll('.btn-set-pwd').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const email = btn.getAttribute('data-email');
+          const name = btn.getAttribute('data-name');
+          const suggestedPassword = 'Escola@' + Math.floor(1000 + Math.random() * 9000);
+
+          modal.open({
+            title: `Definir Senha do Gestor`,
+            body: `
+              <div style="margin-bottom:1rem; font-size:0.9rem; color:var(--slate-600);">
+                Defina a senha de acesso para <strong>${name}</strong> (<span class="mono">${email}</span>). A dona da escola poderá logar imediatamente!
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="manual-admin-pwd">Nova Senha de Acesso <span class="required">*</span></label>
+                <div class="input-with-icon">
+                  <span class="input-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
+                  <input type="text" id="manual-admin-pwd" class="form-control mono" value="${suggestedPassword}" required minlength="6" />
+                </div>
+                <div class="form-hint">Mínimo de 6 caracteres. Você pode usar a senha sugerida acima ou digitar uma de sua preferência.</div>
+              </div>
+            `,
+            footer: `
+              <button class="btn btn-secondary" id="modal-cancel-setpwd">Cancelar</button>
+              <button class="btn btn-primary" id="modal-confirm-setpwd">
+                <span>Salvar e Gerar Acesso</span>
+              </button>
+            `
+          });
+
+          document.getElementById('modal-cancel-setpwd')?.addEventListener('click', () => modal.close());
+          document.getElementById('modal-confirm-setpwd')?.addEventListener('click', async () => {
+            const newPwd = document.getElementById('manual-admin-pwd')?.value.trim();
+            if (!newPwd || newPwd.length < 6) {
+              toast.warning('A senha deve ter pelo menos 6 caracteres.');
+              return;
+            }
+
+            const btnConfirm = document.getElementById('modal-confirm-setpwd');
+            if (btnConfirm) {
+              btnConfirm.disabled = true;
+              btnConfirm.innerHTML = `<span class="spinner"></span> <span>Salvando...</span>`;
+            }
+
+            try {
+              await setSchoolManagerPassword(email, newPwd);
+              toast.success('Senha atualizada com sucesso!');
+              modal.close();
+              showCredentialsModal(name, email, newPwd);
+            } catch (err) {
+              console.error(err);
+              toast.error('Erro ao definir senha: ' + (err.message || 'Verifique se o usuário existe'));
+              if (btnConfirm) {
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = `Salvar e Gerar Acesso`;
+              }
+            }
+          });
+        });
+      });
+
       // Actions
       tbody.querySelectorAll('.btn-resend-invite').forEach(btn => {
         btn.addEventListener('click', async () => {
           const email = btn.getAttribute('data-email');
           try {
             await resendSchoolInvite(email);
-            toast.success(`Convite reenviado para ${email}!`);
+            toast.success(`E-mail de recuperação reenviado para ${email}!`);
           } catch (e) {
-            toast.error(e.message || 'Erro ao reenviar convite.');
+            toast.error(e.message || 'Erro ao reenviar e-mail.');
           }
         });
       });
@@ -158,7 +279,7 @@ export async function renderSchoolsPage(container) {
           const slug = btn.getAttribute('data-slug');
           const url = `${window.location.origin}/public/catalogo.html?escola=${slug}`;
           navigator.clipboard.writeText(url)
-            .then(() => toast.success('Link do catálogo público copiado!'))
+            .then(() => toast.success('Link do catálogo copiado!'))
             .catch(() => toast.info(`Link: ${url}`));
         });
       });
@@ -185,6 +306,8 @@ export async function renderSchoolsPage(container) {
 
   // Attach new school modal
   container.querySelector('#btn-add-school')?.addEventListener('click', () => {
+    const suggestedPassword = 'Escola@' + Math.floor(1000 + Math.random() * 9000);
+
     modal.open({
       title: 'Cadastrar Nova Escola',
       body: `
@@ -195,7 +318,11 @@ export async function renderSchoolsPage(container) {
         <div class="form-group">
           <label class="form-label" for="new-school-email">E-mail do Administrador/Escola <span class="required">*</span></label>
           <input type="email" id="new-school-email" class="form-control" placeholder="biblioteca@escola.gva.br" required />
-          <div class="form-hint">O gestor da escola receberá um e-mail de acesso para definir sua própria senha.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="new-school-password">Senha de Acesso do Gestor <span class="required">*</span></label>
+          <input type="text" id="new-school-password" class="form-control mono" value="${suggestedPassword}" required minlength="6" />
+          <div class="form-hint">Você pode usar a senha sugerida acima ou digitar uma personalizada. A gestora poderá logar imediatamente sem precisar de e-mail!</div>
         </div>
         <div class="form-group">
           <label class="form-label" for="new-school-slug">Slug para Link Público (opcional)</label>
@@ -216,11 +343,12 @@ export async function renderSchoolsPage(container) {
     document.getElementById('modal-save-school')?.addEventListener('click', async () => {
       const name = document.getElementById('new-school-name')?.value.trim();
       const email = document.getElementById('new-school-email')?.value.trim();
+      const password = document.getElementById('new-school-password')?.value.trim();
       const slug = document.getElementById('new-school-slug')?.value.trim();
       const phone = document.getElementById('new-school-phone')?.value.trim();
 
-      if (!name || !email) {
-        toast.warning('Preencha o nome e o e-mail da escola.');
+      if (!name || !email || !password) {
+        toast.warning('Preencha nome, e-mail e senha de acesso.');
         return;
       }
 
@@ -231,10 +359,11 @@ export async function renderSchoolsPage(container) {
       }
 
       try {
-        await createSchool({ name, email, slug, phone });
+        const result = await createSchool({ name, email, slug, phone, password });
         toast.success(`Escola "${name}" cadastrada com sucesso!`);
         modal.close();
         loadSchools();
+        showCredentialsModal(name, email, password);
       } catch (err) {
         console.error(err);
         toast.error('Erro ao cadastrar escola: ' + err.message);
@@ -249,3 +378,4 @@ export async function renderSchoolsPage(container) {
   // Initial load
   loadSchools();
 }
+

@@ -54,6 +54,9 @@ export function initAuth(onChangeCallback) {
 
   // Observa mudanças de sessão no Supabase
   supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      window.dispatchEvent(new CustomEvent('supabase:password-recovery', { detail: session }));
+    }
     if (session?.user) {
       currentUser = session.user;
       currentProfile = await loadUserProfile(session.user.id);
@@ -61,8 +64,15 @@ export function initAuth(onChangeCallback) {
       currentUser = null;
       currentProfile = null;
     }
-    notifyListeners();
+    notifyListeners(event);
   });
+
+  // Checa se veio com hash de recuperação na URL (#type=recovery ou #access_token)
+  if (window.location.hash.includes('type=recovery') || window.location.hash.includes('access_token')) {
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('supabase:password-recovery'));
+    }, 500);
+  }
 
   // Checa sessão atual
   supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -74,10 +84,10 @@ export function initAuth(onChangeCallback) {
   });
 }
 
-function notifyListeners() {
+function notifyListeners(event) {
   authListeners.forEach(cb => {
     try {
-      cb({ user: currentUser, profile: currentProfile });
+      cb({ user: currentUser, profile: currentProfile, event });
     } catch (e) {
       console.error(e);
     }
@@ -160,3 +170,39 @@ export function hasRole(role) {
   if (!currentProfile) return false;
   return currentProfile.role === role;
 }
+
+/**
+ * Atualiza a senha do usuário atualmente autenticado (ex: ao clicar no link do e-mail de recuperação)
+ */
+export async function updateUserPassword(newPassword) {
+  if (!isConfigured || !supabase) {
+    throw new Error('Supabase não conectado.');
+  }
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+/**
+ * Define ou altera diretamente a senha de qualquer gestor/usuário via RPC (privilégio Superadmin)
+ */
+export async function adminSetUserPassword(userEmail, newPassword) {
+  if (!isConfigured || !supabase) {
+    throw new Error('Supabase não conectado.');
+  }
+  const { data, error } = await supabase.rpc('admin_set_user_password', {
+    user_email: userEmail.trim().toLowerCase(),
+    new_password: newPassword
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Erro ao definir senha no banco.');
+  }
+
+  if (data && data.success === false) {
+    throw new Error(data.message || 'Não foi possível alterar a senha.');
+  }
+
+  return data;
+}
+

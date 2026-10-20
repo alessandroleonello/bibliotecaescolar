@@ -1,7 +1,7 @@
 /**
  * Login Page Controller
  */
-import { login, resetPassword } from '../auth.js';
+import { login, resetPassword, updateUserPassword } from '../auth.js';
 import { toast } from '../ui/toast.js';
 import { modal } from '../ui/modal.js';
 import { router } from '../router.js';
@@ -70,6 +70,81 @@ export function renderLoginPage(container) {
       </div>
     </div>
   `;
+
+  // Função para exibir modal de definição de nova senha (ao clicar no link do e-mail)
+  function promptPasswordRecoveryModal() {
+    modal.open({
+      title: 'Definir Nova Senha de Acesso',
+      body: `
+        <div style="background:var(--primary-50, #eff6ff); border:1px solid var(--primary-200, #bfdbfe); border-radius:8px; padding:0.875rem; margin-bottom:1.25rem;">
+          <div style="font-weight:700; color:var(--primary-800); font-size:0.9rem;">
+            🔑 Crie sua senha de acesso
+          </div>
+          <div style="font-size:0.825rem; color:var(--primary-700); margin-top:0.25rem;">
+            Você abriu o link de ativação da conta. Digite a senha que deseja utilizar nos seus próximos acessos ao sistema.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="new-recovery-password">Nova Senha <span class="required">*</span></label>
+          <input type="password" id="new-recovery-password" class="form-control" placeholder="Mínimo de 6 caracteres" required minlength="6" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirm-recovery-password">Confirmar Nova Senha <span class="required">*</span></label>
+          <input type="password" id="confirm-recovery-password" class="form-control" placeholder="Digite a mesma senha novamente" required minlength="6" />
+        </div>
+      `,
+      footer: `
+        <button class="btn btn-secondary" id="modal-cancel-rec">Cancelar</button>
+        <button class="btn btn-primary" id="modal-confirm-rec">Salvar Senha e Entrar</button>
+      `
+    });
+
+    document.getElementById('modal-cancel-rec')?.addEventListener('click', () => modal.close());
+    document.getElementById('modal-confirm-rec')?.addEventListener('click', async () => {
+      const pwd1 = document.getElementById('new-recovery-password')?.value;
+      const pwd2 = document.getElementById('confirm-recovery-password')?.value;
+
+      if (!pwd1 || pwd1.length < 6) {
+        toast.warning('A nova senha deve ter no mínimo 6 caracteres.');
+        return;
+      }
+      if (pwd1 !== pwd2) {
+        toast.error('As duas senhas digitadas não coincidem.');
+        return;
+      }
+
+      const btn = document.getElementById('modal-confirm-rec');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner"></span> <span>Salvando senha...</span>`;
+      }
+
+      try {
+        await updateUserPassword(pwd1);
+        toast.success('Senha definida com sucesso! Acessando o sistema...');
+        modal.close();
+        window.location.hash = '#/dashboard';
+      } catch (err) {
+        console.error(err);
+        toast.error('Erro ao atualizar senha: ' + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `Salvar Senha e Entrar`;
+        }
+      }
+    });
+  }
+
+  // Escuta evento de recuperação de senha disparado por auth.js
+  const handleRecovery = () => promptPasswordRecoveryModal();
+  window.addEventListener('supabase:password-recovery', handleRecovery, { once: true });
+
+  // Checa se a URL atual já chegou com hash de recovery
+  if (window.location.hash.includes('type=recovery') || window.location.hash.includes('type=invite')) {
+    setTimeout(promptPasswordRecoveryModal, 400);
+  }
 
   // Attach event handlers
   const form = container.querySelector('#login-form');

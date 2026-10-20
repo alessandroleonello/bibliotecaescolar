@@ -254,3 +254,39 @@ CREATE POLICY "Usuários leem seus próprios perfis" ON public.profiles
 DROP POLICY IF EXISTS "Superadmin gerencia perfis" ON public.profiles;
 CREATE POLICY "Superadmin gerencia perfis" ON public.profiles
     FOR ALL USING (public.get_auth_role() = 'superadmin');
+
+-- ============================================================================
+-- FUNÇÃO RPC: ALTERAR / DEFINIR SENHA DE USUÁRIO (SUPERADMIN)
+-- Permite que o superadmin defina a senha da dona da escola sem depender de e-mail
+-- ============================================================================
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE OR REPLACE FUNCTION public.admin_set_user_password(user_email TEXT, new_password TEXT)
+RETURNS JSONB AS $$
+DECLARE
+    target_id UUID;
+BEGIN
+    IF public.get_auth_role() != 'superadmin' THEN
+        RAISE EXCEPTION 'Acesso negado: apenas o Superadministrador pode alterar senhas diretamente.';
+    END IF;
+
+    IF length(new_password) < 6 THEN
+        RAISE EXCEPTION 'A senha deve conter no mínimo 6 caracteres.';
+    END IF;
+
+    SELECT id INTO target_id FROM auth.users WHERE LOWER(email) = LOWER(TRIM(user_email));
+    
+    IF target_id IS NULL THEN
+        RETURN jsonb_build_object('success', false, 'message', 'Usuário não encontrado com este e-mail no Supabase Auth.');
+    END IF;
+
+    UPDATE auth.users
+    SET 
+        encrypted_password = crypt(new_password, gen_salt('bf')),
+        email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
+        updated_at = NOW()
+    WHERE id = target_id;
+
+    RETURN jsonb_build_object('success', true, 'message', 'Senha alterada com sucesso.');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
